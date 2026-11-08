@@ -74,7 +74,7 @@ const checkOrder = [9, 8, 1, 2, 3, 4, 5, 6, 7];
 // Layers where `*interface*` files are listed before their implementation.
 const interfaceFirstLayers = {2, 3};
 
-const contextLines = 15;
+const contextLines = 3;
 const refRoot = 'refs/flutter-review';
 const reportDir = '.code-review';
 // ============================================================================
@@ -316,21 +316,34 @@ String fence(String body) {
   return '`' * (longest < 3 ? 3 : longest + 1);
 }
 
-// One heading + one fenced diff per file, so a Markdown preview renders each
-// file's diff on its own instead of one unbroken block per layer.
-String fileSection(ChangedFile fl, String a, String b) {
+// Drops the `diff --git` / `index` / `---` / `+++` boilerplate (the path is
+// already in the numbered heading) and keeps only the `@@` hunks onward.
+String stripDiffHeader(String diff) {
+  final lines = const LineSplitter().convert(diff);
+  final i = lines.indexWhere((l) => l.startsWith('@@'));
+  return i < 0 ? diff : '${lines.sublist(i).join('\n')}\n';
+}
+
+// One numbered heading + one fenced diff per file, so a Markdown preview
+// renders each file on its own line with just its changed lines below it —
+// not a wall of repeated file-path boilerplate.
+String fileSection(ChangedFile fl, String a, String b, int index) {
   final stat = fl.binary ? 'binary' : '+${fl.added} -${fl.deleted}';
-  final out = StringBuffer('#### `${fl.label}` — ${fl.status} ($stat)\n\n');
+  final out = StringBuffer('$index. `${fl.label}` — ${fl.status} ($stat)\n\n');
   if (fl.binary) {
     final side = fl.status == 'deleted' ? '$a:${fl.path}' : '$b:${fl.path}';
-    out.writeln('Binary file, ${git(['cat-file', '-s', side]).trim()} bytes. Content not shown.\n');
+    out.writeln('   Binary file, ${git(['cat-file', '-s', side]).trim()} bytes. Content not shown.\n');
     return out.toString();
   }
-  final body = git([
+  if (fl.status == 'deleted') {
+    out.writeln('   File deleted (${fl.deleted} lines removed).\n');
+    return out.toString();
+  }
+  final body = stripDiffHeader(git([
     'diff', '-M', '-U$contextLines', a, b, '--',
     if (fl.oldPath != null) fl.oldPath!,
     fl.path,
-  ]);
+  ]));
   final f = fence(body);
   out.writeln('${f}diff\n$body$f\n');
   return out.toString();
@@ -354,8 +367,8 @@ String writeReport(String name, String slug, String a, String b, String summary)
     final list = layers[n]!;
     if (list.isEmpty) continue;
     md.writeln('## Layer $n — ${layerNames[n]} (${list.length} files)\n');
-    for (final fl in list) {
-      md.write(fileSection(fl, a, b));
+    for (var i = 0; i < list.length; i++) {
+      md.write(fileSection(list[i], a, b, i + 1));
     }
   }
   file.writeAsStringSync(md.toString());
