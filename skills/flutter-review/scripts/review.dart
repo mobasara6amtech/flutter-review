@@ -76,7 +76,7 @@ const interfaceFirstLayers = {2, 3};
 
 const contextLines = 15;
 const refRoot = 'refs/flutter-review';
-const reportDir = '.claude/review';
+const reportDir = '.code-review';
 // ============================================================================
 
 int classify(String path) {
@@ -316,6 +316,26 @@ String fence(String body) {
   return '`' * (longest < 3 ? 3 : longest + 1);
 }
 
+// One heading + one fenced diff per file, so a Markdown preview renders each
+// file's diff on its own instead of one unbroken block per layer.
+String fileSection(ChangedFile fl, String a, String b) {
+  final stat = fl.binary ? 'binary' : '+${fl.added} -${fl.deleted}';
+  final out = StringBuffer('#### `${fl.label}` — ${fl.status} ($stat)\n\n');
+  if (fl.binary) {
+    final side = fl.status == 'deleted' ? '$a:${fl.path}' : '$b:${fl.path}';
+    out.writeln('Binary file, ${git(['cat-file', '-s', side]).trim()} bytes. Content not shown.\n');
+    return out.toString();
+  }
+  final body = git([
+    'diff', '-M', '-U$contextLines', a, b, '--',
+    if (fl.oldPath != null) fl.oldPath!,
+    fl.path,
+  ]);
+  final f = fence(body);
+  out.writeln('${f}diff\n$body$f\n');
+  return out.toString();
+}
+
 String writeReport(String name, String slug, String a, String b, String summary) {
   final now = DateTime.now();
   String two(int v) => '$v'.padLeft(2, '0');
@@ -327,14 +347,16 @@ String writeReport(String name, String slug, String a, String b, String summary)
   }
   file.parent.createSync(recursive: true);
   final md = StringBuffer('# Review: $name\n\nFrom `$a` to `$b`, written $now\n\n');
-  var f = fence(summary);
+  final f = fence(summary);
   md.writeln('## Summary\n\n$f\n$summary$f\n');
   final layers = byLayer(changedFiles(a, b));
   for (final n in layerNames.keys) {
-    if (layers[n]!.isEmpty) continue;
-    final body = layerText(n, a, b, false);
-    f = fence(body);
-    md.writeln('## Layer $n — ${layerNames[n]}\n\n${f}diff\n$body$f\n');
+    final list = layers[n]!;
+    if (list.isEmpty) continue;
+    md.writeln('## Layer $n — ${layerNames[n]} (${list.length} files)\n');
+    for (final fl in list) {
+      md.write(fileSection(fl, a, b));
+    }
   }
   file.writeAsStringSync(md.toString());
   return file.absolute.path;
@@ -430,7 +452,7 @@ flutter-review commands
                                     e.g. /flutter-review-done pharmacy checkout
   /flutter-review-help              Show this list.
 
-The review (all layers, full diffs, notes) is written to .claude/review/<feature>-<date>.md, not the terminal.
+The review (all layers, full diffs, notes) is written to .code-review/<feature>-<date>.md, not the terminal.
 ''';
 
 void main(List<String> argv) {

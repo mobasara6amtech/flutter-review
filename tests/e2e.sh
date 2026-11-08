@@ -73,7 +73,7 @@ check ".g.dart → Generated"                   has "$out" "\[9\] Generated"$'\n
 check "ignored build/ not included"           bash -c "! grep -q build/out.txt <<<\"\$1\"" _ "$out"
 check "report file written"                   test -s "$report"
 check "report has every non-empty layer"      test "$(grep -c '^## Layer' "$report")" -eq 9
-check "report folder git-excluded"            grep -qx '/.claude/review/' .git/info/exclude
+check "report folder git-excluded"            grep -qx '/.code-review/' .git/info/exclude
 
 layer5=$(review layer 5 "$F" "$TO")
 check "layer diff shows hunks"                has "$layer5" "^\+class CartScreen \{\}"

@@ -148,7 +148,7 @@ What flutter-review adds to your project the first time you run it:
 
 | What | Where | Committed? |
 |---|---|---|
-| Review reports | `.claude/review/*.md` | no — added to `.git/info/exclude` automatically |
+| Review reports | `.code-review/*.md` | no — added to `.git/info/exclude` automatically |
 | Feature snapshots | `refs/flutter-review/<feature>/…` inside `.git` | no — local refs, `git push` never sends them |
 
 Your `.gitignore` and other tracked files are never changed.
@@ -160,7 +160,7 @@ Your `.gitignore` and other tracked files are never changed.
 ```
 1. /flutter-review-start cart checkout     before you write any code for the feature
 2.   ... build the feature ...              commit, amend, switch files — it doesn't matter
-3. /flutter-review                          writes the review to .claude/review/
+3. /flutter-review                          writes the review to .code-review/
 4.   ... read it, ask Claude to fix things ...
 5. /flutter-review-recheck                  reviews only the fixes since step 3
 6. /flutter-review-done cart checkout       when the feature is finished
@@ -208,7 +208,7 @@ dart run $R help
 
 ## 7. The review file
 
-Each review is saved as `.claude/review/<feature>-<yyyyMMdd-HHmm>.md`. The terminal only shows a
+Each review is saved as `.code-review/<feature>-<yyyyMMdd-HHmm>.md`. The terminal only shows a
 link to it; open it in your IDE (Markdown preview works well) whenever you like. Old reviews are
 kept, so you can compare.
 
@@ -336,8 +336,8 @@ checks out, or changes your index or branches. The only things it ever writes ar
 
 - refs under `refs/flutter-review/` (local only)
 - one temporary index file in your system temp folder, deleted after each snapshot
-- review reports under `.claude/review/`
-- one line, `/.claude/review/`, in `.git/info/exclude`
+- review reports under `.code-review/`
+- one line, `/.code-review/`, in `.git/info/exclude`
 
 Claude only edits your code when you ask for a change after a review.
 

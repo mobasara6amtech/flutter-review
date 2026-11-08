@@ -13,4 +13,4 @@ dart run "{{REVIEW_SCRIPT}}" done <feature-name>
 ```
 
 This only deletes refs under `refs/flutter-review/<slug>/`. Saved reports in
-`.claude/review/` stay.
+`.code-review/` stay.

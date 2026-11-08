@@ -5,7 +5,7 @@
 #   ./uninstall.sh --project [path]   a project install
 #   ./uninstall.sh --dry-run          show what would be removed
 #
-# Feature snapshots (refs/flutter-review/*) and saved reports (.claude/review/) in your
+# Feature snapshots (refs/flutter-review/*) and saved reports (.code-review/) in your
 # projects are not touched. See UNINSTALL.md.
 
 set -euo pipefail

@@ -117,8 +117,8 @@ Read-only toward the user's work:
 - Never commit, push, stash, reset, checkout, merge, rebase, or modify the real index,
   HEAD, or branches as part of this skill.
 - The only things this skill writes: refs under `refs/flutter-review/`, temp index files
-  in the system temp dir (deleted after each snapshot), files under `.claude/review/`,
-  and one `/.claude/review/` line in `.git/info/exclude` (never `.gitignore`).
+  in the system temp dir (deleted after each snapshot), files under `.code-review/`,
+  and one `/.code-review/` line in `.git/info/exclude` (never `.gitignore`).
 - The refs are local only; a normal `git push` never sends them.
 - Code edits happen only when the user explicitly asks for a change during the walkthrough.
 

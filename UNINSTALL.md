@@ -30,10 +30,10 @@ inside the project:
 
 ```bash
 git for-each-ref --format='%(refname)' refs/flutter-review/ | xargs -n1 git update-ref -d
-rm -r .claude/review
+rm -r .code-review
 ```
 
-Then delete the `/.claude/review/` line from `.git/info/exclude` if you like. The snapshot commit
+Then delete the `/.code-review/` line from `.git/info/exclude` if you like. The snapshot commit
 objects are unreferenced after the refs are gone; git's normal garbage collection removes them.
 
 ## Temporarily disable without uninstalling
